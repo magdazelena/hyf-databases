@@ -1,4 +1,4 @@
-# Database Fundamentals #1
+# Database Fundamentals for Aspiring Full Stack Developers
 
 ## 1. The Relational Model of Data
 - A **relational database** organizes data into **tables** (also called **relations**).
@@ -13,7 +13,7 @@
 - Table = a class in a school (like "10th Grade")
 - Row = a single student
 - Column = a property like name, age, student ID
-- Foreign key = student assigned to a specific desk (linked to a seat number)
+- Foreign key = student assigned to a specific teacher (linked to a teacher table)
 
 ## 2. Database vs DBMS
 - **Database**: The actual data — stored in files, organized into tables.
@@ -32,17 +32,31 @@
 
 ## 3. Schema
 - A **schema** is like a **blueprint** or **map** of your database.
-- It describes:
-  - What tables exist
-  - What columns each table has
-  - Data types of each column (e.g., integer, text, date)
-  - How tables relate to each other (foreign keys)
-  - Rules for validation (e.g., constraints)
+- It includes:
+  - Tables
+  - Columns for each table and their data types (e.g., INTEGER, VARCHAR, DATE)
+  - Primary keys and foreign keys
+  - Indexes (for faster querying)
+  - Constraints:
+    - `NOT NULL`: Column must have a value
+    - `UNIQUE`: No duplicates allowed
+    - `CHECK`: Validate values against a rule (e.g., age >= 18)
+    - `DEFAULT`: Default value if none provided
+  - Views (virtual tables based on SELECT queries)
+  - Stored procedures and functions
+  - Triggers (automated actions on data changes)
 
 **Example:**
 ```text
 Schema: ecommerce
-Tables: users, orders, products
+Tables:
+  - users (id PK, email UNIQUE NOT NULL, created_at DEFAULT CURRENT_TIMESTAMP)
+  - orders (id PK, user_id FK → users.id, total CHECK(total >= 0))
+  - products (id PK, name NOT NULL, price DECIMAL)
+Indexes:
+  - idx_user_email ON users(email)
+Views:
+  - active_users AS SELECT * FROM users WHERE active = true;
 ```
 
 ## 4. Entity (Row)
@@ -58,6 +72,18 @@ email: "alice@example.com"
 ```
 - Entities should be **unique** (often using an `id` column).
 - Each entity shares the **same structure** (same columns) as others in the same table.
+
+**Common entity data types:**
+
+| Type           | Description                             | SQL Type Examples         | Use Case Examples         |
+|----------------|-----------------------------------------|---------------------------|---------------------------|
+| Identifier     | Uniquely identifies the row             | `INT`, `UUID`, `BIGINT`  | Primary/foreign keys      |
+| Text           | Characters and strings                  | `VARCHAR`, `TEXT`         | Names, emails, addresses  |
+| Numeric        | Integer or decimal numbers              | `INT`, `DECIMAL`, `FLOAT`| Quantities, prices, age   |
+| Date/Time      | Time-related data                       | `DATE`, `TIMESTAMP`       | Creation date, birthdays  |
+| Boolean        | True/False                              | `BOOLEAN`                 | Is active?, Is deleted?   |
+| Binary         | Raw binary data                        | `BLOB`, `BYTEA`           | Files, images, hashes     |
+| Enum/Set       | Limited set of predefined values        | `ENUM`, `SET` (MySQL)     | Status, roles, flags      |
 
 ## 5. Basic Entity Relationship Diagram (ERD)
 - An **ERD** visually shows how tables relate.
