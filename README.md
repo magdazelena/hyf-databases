@@ -1,138 +1,233 @@
-# Database Fundamentals for Aspiring Full Stack Developers
 
----
+ 
+ ---
+ 
+ # Basics of Databases
+ 
+ ## 1. The Relational Model of Data
+ - A **relational database** organizes data into **tables** (also called **relations**).
+ - Think of each table like a **spreadsheet**:
+   - **Rows** (also called **records** or **tuples**) store individual data entries.
+   - **Columns** (also called **fields** or **attributes**) define the type of data stored (e.g., name, age, email).
+ - Each table has a **primary key**, which uniquely identifies each row.
+ - Tables can be related using **foreign keys**, which are references to the primary key in another table.
+ - This model helps reduce redundancy and ensures data integrity.
+ 
+ **Real-world analogy:**
+ - Table = a class in a school (like "10th Grade")
+ - Row = a single student
+ - Column = a property like name, age, student ID
+ - Foreign key = student assigned to a specific teacher (linked to a teacher table)
+ 
+ ## 2. Database vs DBMS
+ - **Database**: The actual data — stored in files, organized into tables.
+ - **DBMS (Database Management System)**: The software that lets you read/write/query data in the database.
+ - The DBMS:
+   - Manages connections
+   - Handles security, backups, and performance
+   - Validates data integrity
+ 
+ **Examples of DBMS:**
+ - PostgreSQL
+ - MySQL
+ - SQLite
+ - Microsoft SQL Server
+ - Oracle
+ 
+ ## 3. Schema
+ - A **schema** is like a **blueprint** or **map** of your database.
+ - It includes:
+   - Tables
+   - Columns for each table and their data types (e.g., INTEGER, VARCHAR, DATE)
+   - Primary keys and foreign keys
+   - Indexes (for faster querying)
+   - Constraints:
+     - `NOT NULL`: Column must have a value
+     - `UNIQUE`: No duplicates allowed
+     - `CHECK`: Validate values against a rule (e.g., age >= 18)
+     - `DEFAULT`: Default value if none provided
+   - Views (virtual tables based on SELECT queries)
+   - Stored procedures and functions
+   - Triggers (automated actions on data changes)
+ 
+ **Example:**
+ ```text
+ Schema: ecommerce
+ Tables:
+   - users (id PK, email UNIQUE NOT NULL, created_at DEFAULT CURRENT_TIMESTAMP)
+   - orders (id PK, user_id FK → users.id, total CHECK(total >= 0))
+   - products (id PK, name NOT NULL, price DECIMAL)
+ Indexes:
+   - idx_user_email ON users(email)
+ Views:
+   - active_users AS SELECT * FROM users WHERE active = true;
+ ```
+ 
+ ## 4. Entity (Row)
+ - An **entity** is a **single item** or **object** stored in a table.
+ - In relational databases, each entity is stored as a **row**.
+ 
+ **Example:**
+ A user entity might be:
+ ```text
+ id: 1
+ name: "Alice"
+ email: "alice@example.com"
+ ```
+ - Entities should be **unique** (often using an `id` column).
+ - Each entity shares the **same structure** (same columns) as others in the same table.
+ 
+ **Common entity data types:**
+ 
+ | Type           | Description                             | SQL Type Examples         | Use Case Examples         |
+ |----------------|-----------------------------------------|---------------------------|---------------------------|
+ | Identifier     | Uniquely identifies the row             | `INT`, `UUID`, `BIGINT`  | Primary/foreign keys      |
+ | Text           | Characters and strings                  | `VARCHAR`, `TEXT`         | Names, emails, addresses  |
+ | Numeric        | Integer or decimal numbers              | `INT`, `DECIMAL`, `FLOAT`| Quantities, prices, age   |
+ | Date/Time      | Time-related data                       | `DATE`, `TIMESTAMP`       | Creation date, birthdays  |
+ | Boolean        | True/False                              | `BOOLEAN`                 | Is active?, Is deleted?   |
+ | Binary         | Raw binary data                        | `BLOB`, `BYTEA`           | Files, images, hashes     |
+ | Enum/Set       | Limited set of predefined values        | `ENUM`, `SET` (MySQL)     | Status, roles, flags      |
+ 
+ ## 5. Basic Entity Relationship Diagram (ERD)
+ - An **ERD** visually shows how tables relate.
+ - Entities (tables) are boxes.
+ - Relationships (e.g. one-to-many) are lines between them.
+ 
+ ```text
+ +--------+     1     *   +---------+
+ | Users  |-------------< | Posts   |
+ +--------+               +---------+
+ | id     |               | id      |
+ | name   |               | user_id |
+ +--------+               +---------+
+ ```
+ 
+ - One user can have many posts.
+ - `user_id` in `Posts` is a **foreign key** pointing to `id` in `Users`.
+ 
 
-# Basics of Databases
+ # SQL Basics
+ 
+ ## 6. A Basic SELECT Statement
+ ```sql
+ SELECT * FROM users;
+ SELECT name, email FROM users;
+ SELECT * FROM students;
+ ```
+ - Gets all columns (`*`) from "students" table.
+ 
+ ## 7. More Complex SELECT Statements
+ ```sql
+ SELECT name FROM users WHERE age > 21;
+ SELECT * FROM posts WHERE published = TRUE AND created_at > '2024-01-01';
+ SELECT name, birthdate FROM students WHERE age > 18 ORDER BY birthdate DESC;
+ ```
+ - Selects specific columns.
+ - Filters with `WHERE`.
+ - Orders results.
+ 
+ ## 8. Pattern Matching with LIKE
+ ```sql
+ SELECT * FROM users WHERE name LIKE 'J%';   -- Names starting with J
+ SELECT * FROM users WHERE email LIKE '%@gmail.com'; -- Gmail users
+ SELECT name FROM students WHERE name LIKE 'A%';
+ ```
+ - Finds names starting with 'A'.
+ 
+ ## 9. Limiting and Ordering Results
+ ```sql
+ SELECT * FROM posts ORDER BY created_at DESC LIMIT 10;
+ SELECT * FROM students ORDER BY age DESC LIMIT 5;
+ ```
+ - `ORDER BY` sorts.
+ - `LIMIT` restricts how many rows you get.
+ 
+ ## 10. GROUP BY
+ - `GROUP BY` is used to **group rows that have the same values in specified columns**.
+ - Usually used with **aggregate functions** to calculate values for each group.
+ 
 
-## 1. The Relational Model of Data
-- Data is organized into tables (also called relations).
-- Each table is made of rows (records) and columns (fields).
-- Tables can be connected using relationships.
-- Think of it like spreadsheets, but smarter: tables "talk" to each other.
+ ```sql
+ SELECT user_id, COUNT(*) FROM posts GROUP BY user_id;
+ SELECT course_id, COUNT(*) FROM enrollments GROUP BY course_id;
+ ```
+ - This returns the number of posts **per user**.
+ - Each group (user_id) has its own count.
+ - Groups rows with same course_id.
+ - Useful when you want summaries.
+ 
+ Use cases:
+ - Count orders per customer
+ - Average score per student
+ - Total sales per product
+ **GROUP BY is needed when:**
+ - You want one row per group (like "count of students per course").
+ 
+ ## 11. Aggregate Functions
+ - `AVG(column)` - Average
+ - `COUNT(column)` - Count non-null
+ - `SUM(column)` - Total sum
+ - `MIN(column)` - Minimum
+ - `MAX(column)` - Maximum
+ - **AVG**: Average value
+ - **COUNT**: How many rows
+ - **SUM**: Total
+ - **MIN**/**MAX**: Smallest/largest value
+ 
+ Example:
+ ```sql
+ SELECT AVG(age) FROM users;
+ SELECT COUNT(*) FROM posts WHERE published = TRUE;
+ SELECT course_id, AVG(grade) FROM enrollments GROUP BY course_id;
+ ```
+ 
+ ## HAVING vs WHERE
+ - `WHERE` filters rows **before** grouping.
+ - `HAVING` filters groups **after** the `GROUP BY`.
 
-## 2. 'Database' vs 'DBMS' (Database Management System)
-- **Database**: A collection of data.
-- **DBMS**: Software that manages databases (like MySQL, PostgreSQL, SQLite).
-
-Example:
-- Database = a library’s collection of books.
-- DBMS = librarians managing and organizing the books.
-
-## 3. The Concept of a Schema
-- Schema = the blueprint for the database.
-- Defines tables, columns, data types, and relationships.
-- Tells the DBMS "what kind of data" and "how it should be organized."
-
-Typical Schema Features:
-- Tables
-- Columns (with types like INT, VARCHAR, DATE, etc.)
-- Primary Keys (unique ID per row)
-- Foreign Keys (references to other tables)
-- Indexes (for faster searches)
-- Views (virtual tables)
-- Triggers (auto-actions when something changes)
-- Procedures and Functions (stored operations)
-
-## 4. Properties of an Entity (Row)
-- **Entity** = a real-world object represented as a row.
-- Each entity has:
-  - Attributes (columns)
-  - A unique identifier (Primary Key)
-
-| Attribute Type  | Example            | Data Type  |
-|-----------------|--------------------|------------|
-| Name            | "Alice"             | VARCHAR    |
-| Age             | 30                  | INT        |
-| Birthdate       | "1994-02-11"         | DATE       |
-| Profile Picture | (binary data)        | BLOB       |
-| Active Status   | true / false         | BOOLEAN (tinyint) |
-
-
-## 5. Basic Entity Relationship Diagrams (ERDs)
-- Shows how tables relate.
-- Drawn as boxes (tables) connected by lines (relationships).
-
-Example:
-- A "Student" table connected to "Course" table through "Enrollment" table.
-
-Simple Visual:
-```
-Student (student_id, name)
-  |
-  |--< Enrollment (student_id, course_id)
-          |
-          v
-     Course (course_id, title)
-```
-
----
-
-# SQL Basics
-
-## 6. A Basic SELECT Statement
-```sql
-SELECT * FROM students;
-```
-- Gets all columns (`*`) from "students" table.
-
-## 7. More Complex SELECT Statements
-```sql
-SELECT name, birthdate FROM students WHERE age > 18 ORDER BY birthdate DESC;
-```
-- Selects specific columns.
-- Filters with `WHERE`.
-- Orders results.
-
-## 8. Pattern Matching with LIKE
-```sql
-SELECT name FROM students WHERE name LIKE 'A%';
-```
-- Finds names starting with 'A'.
-
-## 9. Limiting and Ordering Results
-```sql
-SELECT * FROM students ORDER BY age DESC LIMIT 5;
-```
-- `ORDER BY` sorts.
-- `LIMIT` restricts how many rows you get.
-
-## 10. Grouping Results with GROUP BY
-```sql
-SELECT course_id, COUNT(*) FROM enrollments GROUP BY course_id;
-```
-- Groups rows with same course_id.
-- Useful when you want summaries.
-
-**GROUP BY is needed when:**
-- You want one row per group (like "count of students per course").
-
-## 11. Aggregate Functions
-- **AVG**: Average value
-- **COUNT**: How many rows
-- **SUM**: Total
-- **MIN**/**MAX**: Smallest/largest value
-
-Example:
-```sql
-SELECT course_id, AVG(grade) FROM enrollments GROUP BY course_id;
-```
-
-## 12. JOIN
-- Combines data from multiple tables.
-
-Example:
-```sql
-SELECT students.name, enrollments.grade
-FROM students
-JOIN enrollments ON students.student_id = enrollments.student_id;
-```
-
-## 13. Selecting Composite Data from Multiple Tables
-- JOIN lets you fetch combined info from several tables in one query.
-
-## 14. Compare JOIN WHERE vs Cartesian Product
-- Without JOIN, `SELECT * FROM A, B` creates a giant mess (every row paired with every other row — Cartesian product).
-- JOIN links only matching rows based on a condition.
+  -- Group and filter groups
+ SELECT customer_id, SUM(total) AS total_spent
+ FROM orders
+ GROUP BY customer_id
+ HAVING SUM(total) > 1000;
+ 
+ ## 12. JOIN
+ - Combines data from multiple tables.
+ 
+ **Example:**
+ Example:
+ ```sql
+ -- Filter rows first
+ SELECT * FROM orders WHERE total > 100;
+ SELECT students.name, enrollments.grade
+ FROM students
+ JOIN enrollments ON students.student_id = enrollments.student_id;
+ ```
+ 
+ ## 13. Selecting Composite Data from Multiple Tables
+ - JOIN lets you fetch combined info from several tables in one query.
+ 
+ ## 14. Compare JOIN WHERE vs Cartesian Product
+ - Without JOIN, `SELECT * FROM A, B` creates a giant mess (every row paired with every other row — Cartesian product).
+ - JOIN links only matching rows based on a condition.
+ 
+ ---
+ 
+ # Good Practices
+ 
+ ## 15. Naming Conventions
+ - **UpperCamelCase**: StudentGrade
+ - **lowerCamelCase**: studentGrade
+ - **snake_case**: student_grade
+ - **hnHungarianNotation**: intStudentGrade
+ 
+ Use snake_case for SQL usually.
+ 
+ ## 16. Character Sets in Databases
+ - Always use **UTF-8** encoding.
+ - In MySQL, use `utf8mb4` (supports emojis and special characters properly).
+ 
 
 ---
 
