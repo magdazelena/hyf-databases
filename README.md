@@ -231,21 +231,6 @@
 
 ---
 
-# Good Practices
-
-## 15. Naming Conventions
-- **UpperCamelCase**: StudentGrade
-- **lowerCamelCase**: studentGrade
-- **snake_case**: student_grade
-- **hnHungarianNotation**: intStudentGrade
-
-Use snake_case for SQL usually.
-
-## 16. Character Sets in Databases
-- Always use **UTF-8** encoding.
-- In MySQL, use `utf8mb4` (supports emojis and special characters properly).
-
----
 
 # Data Definition and Manipulation
 
@@ -448,20 +433,14 @@ VALUES (
 - `updated_at = CURRENT_TIMESTAMP` → current UTC time (e.g., `2025-07-10 07:30:00` if your timezone is UTC+2)
 
 
-# Database Fundamentals for Aspiring Full Stack Developers
-
-(...previous content...)
-
----
-
-# Security and NoSQL Basics
+# Security
 
 ## 31. SQL Injection
 
-* A way hackers trick SQL into running bad commands.
+* A way "hackers" trick SQL into running bad commands.
 * Happens when you put user input directly into SQL queries.
 
-### 1. How a hacker can input a bad command
+### 1. How a "hacker" can input a bad command
 
 Imagine a login form in HTML:
 
@@ -507,7 +486,7 @@ This deletes your entire user table if not protected.
 
 * `'1=1'` is always true.
 * So the WHERE clause selects **every row**.
-* The hacker gains access to **all data**, not just their own.
+* The "hacker" gains access to **all data**, not just their own.
 
 ### Bad (Vulnerable) Example:
 
@@ -567,24 +546,6 @@ connection.execute(
 connection.execute("SELECT * FROM users WHERE name = ?", [userInput]);
 ```
 
-This way, even if `userInput = "x' OR '1'='1"`, it's treated as a string, not code.
-
-**Bad (Vulnerable):**
-
-```sql
-SELECT * FROM users WHERE name = '" + userInput + "';
-```
-
-* A hacker might type `x' OR '1'='1` and get access to everything.
-
-**Fix:**
-
-* Use **prepared statements** or parameterized queries.
-* Example with placeholders:
-
-```sql
-SELECT * FROM users WHERE name = ?;
-```
 
 ## 32. User GRANTS
 
@@ -600,157 +561,9 @@ REVOKE DELETE ON mydb.* FROM 'readonly'@'localhost';
 
 ---
 
-# Database Fundamentals for Aspiring Full Stack Developers
 
-(...previous content...)
+# NoSQL Basics
 
----
-
-# Security and NoSQL Basics
-
-## 31. SQL Injection
-
-* A way hackers trick SQL into running bad commands.
-* Happens when you put user input directly into SQL queries.
-
-### 1. How a hacker can input a bad command
-
-Imagine a login form in HTML:
-
-```html
-<input type="text" name="username">
-```
-
-And a JavaScript backend that builds a query like this:
-
-```javascript
-const sql = "SELECT * FROM users WHERE username = '" + input + "'";
-```
-
-If someone types this into the form:
-
-```
-x' OR '1'='1
-```
-
-The SQL becomes:
-
-```sql
-SELECT * FROM users WHERE username = 'x' OR '1'='1';
-```
-
-### 2. Example of actual nasty behavior
-
-```sql
-SELECT * FROM users WHERE username = 'admin' --' AND password = 'wrong';
-```
-
-The `--` turns the rest into a comment. This bypasses the password check entirely.
-
-Or worse:
-
-```sql
-'; DROP TABLE users; --
-```
-
-This deletes your entire user table if not protected.
-
-### 3. Why '1=1' is dangerous
-
-* `'1=1'` is always true.
-* So the WHERE clause selects **every row**.
-* The hacker gains access to **all data**, not just their own.
-
-### Bad (Vulnerable) Example:
-
-```sql
-SELECT * FROM users WHERE name = '" + userInput + "';
-```
-
-### Fix:
-
-* Use **prepared statements** or parameterized queries.
-
-### What is a parameterized query?
-
-* It means you **don’t build the SQL string by mixing in user input**.
-* Instead, you use a **placeholder** (like `?` or named variables), and give the values separately.
-* This way, the SQL engine knows what’s part of the query and what’s just a value.
-* It completely separates data from code.
-
-### Why it's safer:
-
-* User input can never change the structure of the SQL.
-* Even if a user types something dangerous, it’s just treated as plain text.
-
-### Example in MySQL (using CLI or stored procedures):
-
-```sql
-PREPARE stmt FROM 'SELECT * FROM users WHERE name = ?';
-SET @name = 'Alice';
-EXECUTE stmt USING @name;
-```
-
-### Example in Node.js (mysql2):
-
-```javascript
-const mysql = require('mysql2');
-const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '',
-  database: 'testdb'
-});
-
-const name = userInput;
-connection.execute(
-  'SELECT * FROM users WHERE name = ?',
-  [name],
-  (err, results) => {
-    if (err) throw err;
-    console.log(results);
-  }
-);
-```
-
-### Example in Node.js (mysql2):
-
-```javascript
-connection.execute("SELECT * FROM users WHERE name = ?", [userInput]);
-```
-
-This way, even if `userInput = "x' OR '1'='1"`, it's treated as a string, not code.
-
-**Bad (Vulnerable):**
-
-```sql
-SELECT * FROM users WHERE name = '" + userInput + "';
-```
-
-* A hacker might type `x' OR '1'='1` and get access to everything.
-
-**Fix:**
-
-* Use **prepared statements** or parameterized queries.
-* Example with placeholders:
-
-```sql
-SELECT * FROM users WHERE name = ?;
-```
-
-## 32. User GRANTS
-
-* Control what users can and cannot do.
-* Use `GRANT` and `REVOKE`.
-
-Example:
-
-```sql
-GRANT SELECT, INSERT ON mydb.* TO 'readonly'@'localhost';
-REVOKE DELETE ON mydb.* FROM 'readonly'@'localhost';
-```
-
----
 
 # 33. What is a Non-Relational Database?
 
@@ -803,6 +616,26 @@ Use a non-relational database when:
 * Product catalogs where each item has custom fields.
 * IoT data streams with time-series data.
 
+
+
+# 34. Introduction to Non-Relational Data with MongoDB
+
+* MongoDB is a NoSQL database.
+* Stores data in **documents** (like JSON).
+* No tables, rows — instead collections and documents.
+
+**Example Document:**
+
+```json
+{
+  "name": "Alice",
+  "age": 25,
+  "email": "alice@example.com"
+}
+```
+
+---
+
 ## How MongoDB Stores Data (Documents and DBMS Perspective)
 
 * In MongoDB, data is stored in **collections** of **documents**.
@@ -836,35 +669,6 @@ Use a non-relational database when:
 ```
 
 The MongoDB server manages these documents, indexes them, and makes them searchable — similar to how a SQL DBMS like MySQL stores and retrieves rows.
-
-# 34. Introduction to Non-Relational Data with MongoDB
-
-* MongoDB is a NoSQL database.
-* Stores data in **documents** (like JSON).
-* No tables, rows — instead collections and documents.
-
-**Example Document:**
-
-```json
-{
-  "name": "Alice",
-  "age": 25,
-  "email": "alice@example.com"
-}
-```
-
----
-
-## 34. MongoDB vs SQL
-
-| Feature       | SQL (MySQL, Postgres) | MongoDB                 |
-| ------------- | --------------------- | ----------------------- |
-| Structure     | Tables & Rows         | Collections & Documents |
-| Schema        | Fixed (strict)        | Flexible                |
-| Relationships | JOINs                 | Embedded or Linked      |
-| Transactions  | Strong (ACID)         | Good (but different)    |
-
----
 
 ## 35. Create/Drop a Database
 
